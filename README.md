@@ -80,7 +80,7 @@ public @interface NoDuplicate {
 4. message：重复提交时的报错信息，默认为 "请勿重复提交"
 
 **注意事项**
-1. 重复提交时抛出 DuplicateException 异常，注意是否需要在全局异常中处理该异常
+1. 重复提交时抛出 `DuplicateSubmitException` 异常，注意是否需要在全局异常中处理该异常
 2. 该注解仅针对 Web 请求方法，只用于重复提交的判断
 
 ### 3.2 自动根据参数拦截
