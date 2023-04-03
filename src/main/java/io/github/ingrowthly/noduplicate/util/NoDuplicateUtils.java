@@ -46,12 +46,13 @@ public class NoDuplicateUtils {
      * 方法签名缓存
      */
     private static final LoadingCache<MethodSignature, String[]> SIGNATURE_TO_PARAMETER_NAMES_CACHE =
-        CacheBuilder.newBuilder().maximumSize(1000).expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
-            @Override
-            public String[] load(MethodSignature signature) {
-                return DISCOVERER.getParameterNames(signature.getMethod());
-            }
-        });
+        CacheBuilder.newBuilder().maximumSize(1000).expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<MethodSignature, String[]>() {
+                @Override
+                public String[] load(MethodSignature signature) {
+                    return DISCOVERER.getParameterNames(signature.getMethod());
+                }
+            });
 
     static {
         // 允许属性名称没有引号

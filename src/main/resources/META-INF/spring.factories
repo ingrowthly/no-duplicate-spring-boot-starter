@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-io.github.ingrowthly.noduplicate.annotation.NoDuplicate
+io.github.ingrowthly.noduplicate.config.NoDuplicateAutoConfiguration
