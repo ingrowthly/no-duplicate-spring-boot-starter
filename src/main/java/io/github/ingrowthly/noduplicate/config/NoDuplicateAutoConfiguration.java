@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 /**
  * 防重复提交自动配置类
  *
+ * @author ingrowthly
  * @since 2023/4/3
  */
 @Configuration

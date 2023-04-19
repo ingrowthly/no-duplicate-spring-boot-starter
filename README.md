@@ -1,5 +1,12 @@
 # 防重复提交工具
 
+---
+
+[![Maven central](https://maven-badges.herokuapp.com/maven-central/io.github.ingrowthly/no-duplicate-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.mybatis/mybatis-spring)
+[![License](https://img.shields.io/:license-apache-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+
+---
+
 基于 Redis 的防重复提交工具
 
 ## 1. 前提

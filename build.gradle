@@ -1,11 +1,15 @@
+import java.time.LocalDateTime
+
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.springframework.boot' version '2.7.10'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group = 'io.github.ingrowthly'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0'
 sourceCompatibility = '8'
 
 configurations {
@@ -35,4 +39,116 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jar {
+    enabled = true
+    archiveClassifier = ''
+    into("META-INF/") {
+        from rootProject.file("LICENSE")
+    }
+    into("META-INF/maven/$project.group/$project.name") {
+        from { generatePomFileForMavenJavaPublication }
+        rename ".*", "pom.xml"
+    }
+    afterEvaluate {
+        manifest {
+            attributes 'Implementation-Title': archiveBaseName
+            attributes 'Implementation-Version': archiveVersion
+            attributes 'Built-Gradle': gradle.gradleVersion
+            attributes 'Build-OS': System.getProperty("os.name")
+            attributes 'Built-By': System.getProperty("user.name")
+            attributes 'Build-Jdk': System.getProperty("java.version")
+            attributes 'Build-Timestamp': LocalDateTime.now().format("yyyy-MM-dd HH:mm:ss")
+            attributes 'Automatic-Module-Name': "${project.group}.${project.name.replaceAll("-", ".")}"
+        }
+    }
+}
+
+tasks.register('sourcesJar', Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+tasks.register('javadocJar', Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+    afterEvaluate {
+        configure(options) {
+            encoding "UTF-8"
+            charSet 'UTF-8'
+            author true
+            version true
+            failOnError false
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'no-duplicate-spring-boot-starter'
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = 'no-duplicate-spring-boot-starter'
+                packaging 'jar'
+                description = 'Redis-based anti-duplicate submission tool.'
+                url = 'https://github.com/ingrowthly/no-duplicate-spring-boot-starter'
+
+                scm {
+                    connection = 'scm:git@github.com:Codearte/gradle-nexus-staging-plugin.git'
+                    developerConnection = 'scm:git@github.com:Codearte/gradle-nexus-staging-plugin.git'
+                    url = 'https://github.com/ingrowthly/no-duplicate-spring-boot-starter'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'ingrowthly'
+                        name = 'chuncheng'
+                        email = 'im.chuncheng@outlook.com'
+                    }
+                }
+            }
+
+            repositories {
+                maven {
+                    name = "OSSRH"
+                    def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                    url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+                    credentials {
+                        username = System.getenv("MAVEN_USERNAME")
+                        password = System.getenv("MAVEN_PASSWORD")
+                    }
+                }
+            }
+        }
+    }
+}
+
+ext.'signing.keyId' = System.getenv("SIGNING_KEYID")
+ext.'signing.password' = System.getenv("SIGNING_PASSWORD")
+ext.'signing.secretKeyRingFile' = System.getenv("SIGNING_SECRET")
+
+signing {
+    sign publishing.publications.mavenJava
 }

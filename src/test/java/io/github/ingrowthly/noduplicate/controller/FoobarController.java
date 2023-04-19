@@ -15,33 +15,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/test")
 public class FoobarController {
 
-  @GetMapping
-  @NoDuplicate
-  public Object get(String foo, String bar) {
-    return foo + bar;
-  }
+    @GetMapping
+    @NoDuplicate
+    public Object get(String foo, String bar) {
+        return foo + bar;
+    }
 
-  @PostMapping
-  @NoDuplicate
-  public Object post(@RequestBody Foobar foobar) {
-    return foobar;
-  }
+    @PostMapping
+    @NoDuplicate
+    public Object post(@RequestBody Foobar foobar) {
+        return foobar;
+    }
 
-  @GetMapping("/spel")
-  @NoDuplicate(key = "#foo")
-  public Object getSpel(String foo, String bar) {
-    return foo + bar;
-  }
+    @GetMapping("/spel")
+    @NoDuplicate(key = "#foo")
+    public Object getSpel(String foo, String bar) {
+        return foo + bar;
+    }
 
-  @PostMapping("/spel")
-  @NoDuplicate(key = "#foobar.bar")
-  public Object postSpel(@RequestBody Foobar foobar) {
-    return foobar;
-  }
+    @PostMapping("/spel")
+    @NoDuplicate(key = "#foobar.bar")
+    public Object postSpel(@RequestBody Foobar foobar) {
+        return foobar;
+    }
 
-  @GetMapping("/no-params")
-  @NoDuplicate
-  public Object noParams() {
-    return "no-params";
-  }
+    @GetMapping("/no-params")
+    @NoDuplicate
+    public Object noParams() {
+        return "no-params";
+    }
 }
