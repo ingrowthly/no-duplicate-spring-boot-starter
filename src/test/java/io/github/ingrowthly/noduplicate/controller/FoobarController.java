@@ -44,4 +44,22 @@ public class FoobarController {
   public Object noParams() {
     return "no-params";
   }
+
+  @GetMapping("/termination")
+  @NoDuplicate(termination = true)
+  public Object getTermination(String foo, String bar) {
+    return foo + bar;
+  }
+
+  @GetMapping("/termination/exception")
+  @NoDuplicate(termination = true, ttl = 200)
+  public Object getTerminationException(String foo, String bar) {
+    throw new NullPointerException("发生 NullPointerException 异常");
+  }
+
+  @GetMapping("/termination/longTTL")
+  @NoDuplicate(termination = true, ttl = 200)
+  public Object getTerminationLongTTL(String foo, String bar) {
+    return foo + bar;
+  }
 }
