@@ -6,12 +6,12 @@ import io.github.ingrowthly.noduplicate.annotation.NoDuplicate;
 import io.github.ingrowthly.noduplicate.exception.DuplicateSubmitException;
 import io.github.ingrowthly.noduplicate.util.NoDuplicateUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +20,8 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.Objects;
 
 /**
  * 防止重复提交切面
@@ -45,32 +47,44 @@ public class NoDuplicateAspect {
     public void doPointcut() {
     }
 
-    @Around("doPointcut()&&@annotation(noDuplicate)")
-    public Object doAround(ProceedingJoinPoint pjp, NoDuplicate noDuplicate) throws Throwable {
-
+    @Before("doPointcut()&&@annotation(noDuplicate)")
+    public void doBefore(JoinPoint pjp, NoDuplicate noDuplicate) {
         ServletRequestAttributes attributes =
-            (ServletRequestAttributes)Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
+                (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
         HttpServletRequest request = attributes.getRequest();
 
+        // 生成 Redis key
+        String redisKey = getKey(pjp, noDuplicate, request);
+        log.info("NoDuplicateSubmit redisKey: {}", redisKey);
+        String result = noRepeatSubmitRedisTemplate.execute(noRepeatSubmitRedisScript, Lists.newArrayList(redisKey),
+                String.valueOf(noDuplicate.ttl()));
+        if (!"ok".equalsIgnoreCase(result)) {
+            throw new DuplicateSubmitException(noDuplicate.message());
+        }
+    }
+
+    @After("doPointcut()&&@annotation(noDuplicate)")
+    public void doAfter(JoinPoint pjp, NoDuplicate noDuplicate) {
+        if (noDuplicate.termination()) {
+            ServletRequestAttributes attributes =
+                    (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
+            HttpServletRequest request = attributes.getRequest();
+            String redisKey = getKey(pjp, noDuplicate, request);
+            noRepeatSubmitRedisTemplate.delete(redisKey);
+        }
+    }
+
+
+    private String getKey(JoinPoint pjp, NoDuplicate noDuplicate, HttpServletRequest request) {
         // 生成请求签名
         String sign;
         if (Strings.isNullOrEmpty(noDuplicate.key())) {
-            sign = NoDuplicateUtils.getMethodSign(((MethodSignature)pjp.getSignature()).getMethod(), pjp.getArgs());
+            sign = NoDuplicateUtils.getMethodSign(((MethodSignature) pjp.getSignature()).getMethod(), pjp.getArgs());
         } else {
             sign = NoDuplicateUtils.getSpelKey(pjp, noDuplicate);
         }
 
         // 生成 Redis key
-        String redisKey =
-            NoDuplicateUtils.buildRedisKey(namespace, noDuplicate.uri() ? request.getServletPath() : null, sign);
-        log.info("NoDuplicateSubmit redisKey: {}", redisKey);
-
-        String result = noRepeatSubmitRedisTemplate.execute(noRepeatSubmitRedisScript, Lists.newArrayList(redisKey),
-            String.valueOf(noDuplicate.ttl()));
-
-        if ("ok".equalsIgnoreCase(result)) {
-            return pjp.proceed();
-        }
-        throw new DuplicateSubmitException(noDuplicate.message());
+        return NoDuplicateUtils.buildRedisKey(namespace, noDuplicate.uri() ? request.getServletPath() : null, sign);
     }
 }

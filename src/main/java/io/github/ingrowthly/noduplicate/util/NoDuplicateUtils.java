@@ -13,18 +13,19 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.github.ingrowthly.noduplicate.annotation.NoDuplicate;
-import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * 防止重复提交工具类
@@ -94,7 +95,7 @@ public class NoDuplicateUtils {
      * @param noDuplicate NoRepeatSubmit
      * @return SpEL 表达式值 SHA1 签名
      */
-    public static String getSpelKey(ProceedingJoinPoint pjp, NoDuplicate noDuplicate) {
+    public static String getSpelKey(JoinPoint pjp, NoDuplicate noDuplicate) {
         String key = noDuplicate.key();
         if (Strings.isNullOrEmpty(key)) {
             return EMPTY_STRING_HASHING;

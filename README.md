@@ -70,6 +70,16 @@ public @interface NoDuplicate {
      * 重复提交时的提示信息
      */
     String message() default "请勿重复提交";
+    
+    /**
+     * 是否主动结束防重复功能
+     *
+     * <p>
+     *     true: 请求结束后主动结束防重复功能
+     *     false: 由 ttl() 控制防重复功能失效时间
+     * </p>
+     */
+    boolean termination() default false;
 }
 
 ```
@@ -78,6 +88,7 @@ public @interface NoDuplicate {
 2. key：SpEL 表达式，留空表示使用参数签名，有值使用 SpEL 表达式值签名，签名用于判断请求是否重复
 3. uri：是否拼接上请求的 URI，默认开启
 4. message：重复提交时的报错信息，默认为 "请勿重复提交"
+5. termination: 请求完成是否主动结束防重复功能， 默认为 false
 
 **注意事项**
 1. 重复提交时抛出 `DuplicateSubmitException` 异常，注意是否需要在全局异常中处理该异常
@@ -138,6 +149,23 @@ public class FoobarController {
 
 }
 
+```
+
+### 3.4 请求结束停止拦截
+`@NoDuplicate` 中的 `termination` 默认为 false。 若置为 true，当请求结束后即使未到 ttl 设置时间，剩余时间内也不会拦截相同请求。
+> 例如：一个请求时长为1秒，ttl 设置时长为2秒，当`termination`为 true时，前1秒内请求未完成，相同请求会被拦截，请求完成后，未达到 ttl 设置时间，相同请求不会被拦截。
+```java
+@RestController
+@RequestMapping("/test")
+public class FoobarController {
+
+    @GetMapping("/termination")
+    @NoDuplicate(termination = true)
+    public Object getTermination(String foo, String bar) {
+        return foo + bar;
+    }
+
+}
 ```
 
 ## 附录
