@@ -65,4 +65,22 @@ class FoobarControllerTest {
         Thread.sleep(2000);
         assertDoesNotThrow(() -> foobarController.noParams());
     }
+
+    @Test
+    void getTermination() {
+        assertEquals("foobar", foobarController.getTermination("foo", "bar"));
+        assertDoesNotThrow(() -> foobarController.getTermination("foo", "bar"));
+    }
+
+    @Test
+    void getTerminationException() {
+        assertThrows(NullPointerException.class, () -> foobarController.getTerminationException("foo", "bar"));
+        assertThrows(NullPointerException.class, () -> foobarController.getTerminationException("foo", "bar"));
+    }
+
+    @Test
+    void getTerminationLongTTL() {
+        assertDoesNotThrow(() -> foobarController.getTerminationLongTTL("foo", "bar"));
+        assertDoesNotThrow(() -> foobarController.getTerminationLongTTL("foo", "bar"));
+    }
 }

@@ -37,4 +37,12 @@ public @interface NoDuplicate {
      * 重复提交时的提示信息
      */
     String message() default "请勿重复提交";
+
+    /**
+     * 是否主动结束防重复功能
+     *
+     * <p>true: 请求结束后主动结束防重复功能
+     * <p>false: 由 ttl() 控制防重复功能失效时间
+     */
+    boolean termination() default false;
 }
