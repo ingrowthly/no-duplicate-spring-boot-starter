@@ -1,9 +1,11 @@
 package io.github.ingrowthly.noduplicate.annotation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 防止重复提交
@@ -12,6 +14,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface NoDuplicate {
 
     /**
@@ -20,6 +23,11 @@ public @interface NoDuplicate {
      * <p>两次相同参数的请求，如果间隔时间大于该参数，系统不会认定为重复提交的数据
      */
     int ttl() default 2;
+
+    /**
+     * {@link #ttl()} 的时间单位
+     */
+    TimeUnit timeUnit() default TimeUnit.SECONDS;
 
     /**
      * 校验 key，Spring EL 表达式

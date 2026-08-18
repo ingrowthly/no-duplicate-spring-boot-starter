@@ -1,16 +1,15 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.0.5'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'java-library'
+    id 'jacoco'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
 }
 
 group = 'io.github.ingrowthly'
-version = '2.0.0-SNAPSHOT'
-sourceCompatibility = '17'
+version = providers.gradleProperty('releaseVersion').getOrElse('3.0.0-SNAPSHOT')
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
@@ -19,20 +18,103 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    api platform('org.springframework.boot:spring-boot-dependencies:4.1.0')
+    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.1.0')
+
+    api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.springframework.boot:spring-boot-starter-data-redis'
+    api 'org.springframework.boot:spring-boot-starter-aspectj'
+
+    api 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework:spring-web'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
-    implementation 'org.projectlombok:lombok'
+
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    annotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-parameters', '-Xlint:all,-processing', '-Werror']
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.80
+            }
+        }
+    }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.addStringOption('Xdoclint:all,-missing', '-quiet')
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Automatic-Module-Name': 'io.github.ingrowthly.noduplicate')
+    }
+    from(rootProject.file('LICENSE')) {
+        into 'META-INF'
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    pom {
+        name = 'No Duplicate Spring Boot Starter'
+        description = 'Redis-backed duplicate request protection for Spring Boot applications'
+        inceptionYear = '2023'
+        url = 'https://github.com/ingrowthly/no-duplicate-spring-boot-starter'
+
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                id = 'ingrowthly'
+                name = 'chuncheng'
+                email = 'im.chuncheng@outlook.com'
+            }
+        }
+        scm {
+            url = 'https://github.com/ingrowthly/no-duplicate-spring-boot-starter'
+            connection = 'scm:git:https://github.com/ingrowthly/no-duplicate-spring-boot-starter.git'
+            developerConnection = 'scm:git:ssh://git@github.com/ingrowthly/no-duplicate-spring-boot-starter.git'
+        }
+    }
 }

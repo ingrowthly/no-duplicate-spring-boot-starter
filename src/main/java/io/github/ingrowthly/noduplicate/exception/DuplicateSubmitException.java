@@ -7,7 +7,9 @@ package io.github.ingrowthly.noduplicate.exception;
  */
 public class DuplicateSubmitException extends RuntimeException {
 
-  public DuplicateSubmitException(String message) {
-    super(message);
-  }
+    private static final long serialVersionUID = 1L;
+
+    public DuplicateSubmitException(String message) {
+        super(message);
+    }
 }

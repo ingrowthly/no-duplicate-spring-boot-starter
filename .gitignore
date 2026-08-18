@@ -1,24 +1,22 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
+# Gradle
+.gradle/
+.gradle-user-home/
+**/build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+!gradle/wrapper/gradle-wrapper.jar
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# JVM output and diagnostics
+*.class
+*.hprof
+*.jfr
+*.log
+hs_err_pid*
+replay_pid*
+.attach_pid*
 
-### IntelliJ IDEA ###
-.idea
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -26,13 +24,46 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Eclipse and Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-### VS Code ###
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Visual Studio Code
 .vscode/
+
+# Local tools and environment
+.codex/
+.env
+.env.*
+!.env.example
+HELP.md
+local.properties
+
+# Operating system and editor files
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
